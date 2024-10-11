@@ -1,7 +1,4 @@
 import argparse
-from openai import OpenAI, AzureOpenAI
-import base64
-from mimetypes import guess_type
 
 sys_prompt_t2v = """You are part of a team of bots that creates videos. You work with an assistant bot that will draw anything you say in square brackets.
 
@@ -53,15 +50,14 @@ def client_chat_completions_create(
     return response
 
 
-#convert_demo.py ln 62, taken from ...
-def convert_prompt(prompt: str, retry_times: int = 3, type: str = "t2v", image_path: str = None):
+def convert_prompt_unswitched(prompt: str, retry_times: int = 3, type: str = "t2v", image_path: str = None):
     """
     Convert a prompt to a format that can be used by the model for inference
     """
 
     text = prompt.strip()
-    for i in range(retry_times):
-        if type == "t2v":
+    if type == "t2v":
+        for i in range(retry_times):
             response = client_chat_completions_create(
                 messages=[
                     {"role": "system", "content": f"{sys_prompt_t2v}"},
@@ -100,7 +96,11 @@ def convert_prompt(prompt: str, retry_times: int = 3, type: str = "t2v", image_p
                 stream=False,
                 max_tokens=250,
             )
-        else:
+        if response["choices"]:
+            return response["choices"][0]["message"]["content"]
+
+    else:
+        for i in range(retry_times):
             response = client_chat_completions_create(
                 model="gpt-4o",
                 messages=[
@@ -138,9 +138,4 @@ if __name__ == "__main__":
 
     prompts = args.prompts.split("\n")
     for p in prompts:
-        converted_prompt = convert_prompt(p, args.retry_times, args.type, args.image_path)
-    
-
-
-
-
+        converted_prompt = convert_prompt_unswitched(p, args.retry_times, args.type, args.image_path)

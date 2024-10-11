@@ -1,0 +1,9 @@
+
+
+USAGE
+The number of iterations for the tested loops depends on the number of arguments (usernames for Sherlock, prompts for Cogvideo) provided.
+
+Sherlock - Provide the usernames via the program arguments. Each username must contain "{$}" and they must be separated by a "\n". 
+
+Cogvideo - Provide the prompts through the --prompts arg. They must be separated by a "\n"
+

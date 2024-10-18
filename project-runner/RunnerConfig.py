@@ -48,7 +48,7 @@ class RunnerConfig:
         treatment = FactorModel("treatment", ["Default Loop", "Loop Unswitching", "Loop Unrolling"])
         
         # Factor for iterations (10 and 20)
-        iterations = FactorModel("iterations", [10, 20])
+        iterations = FactorModel("iterations", [50, 10000])
 
         # Exclude unwanted variations: CogVideo should not use Loop Unrolling, Sherlock should not use Loop Unswitching
         exclude_variations = [
@@ -60,7 +60,7 @@ class RunnerConfig:
         self.run_table_model = RunTableModel(
             factors=[subject, treatment, iterations],
             exclude_variations=exclude_variations,
-            data_columns=['system_power', 'used_memory'],
+            data_columns=['total_cpu_energy', 'average_cpu_usage', 'used_memory', 'used_swap'],
             shuffle=True,
             repetitions=16
         )
@@ -85,7 +85,7 @@ class RunnerConfig:
 
     def start_measurement(self, context: RunnerContext) -> None:
         """Start energy measurement with EnergiBridge."""
-        sampling_interval = 1000  # 1 sample per second
+        sampling_interval = 10  # 1 sample per second
         subject = context.run_variation['subject']
         treatment = context.run_variation['treatment']
         iterations = context.run_variation['iterations']
@@ -93,26 +93,37 @@ class RunnerConfig:
         # Select the appropriate script based on the subject and treatment
         if subject == "Sherlock":
             script = "sherlock_snippet.py" if treatment == "Default Loop" else "sherlock_optimized.py"
-
-        
+            if iterations == 50:
+                arguments = "../arguments/args_sherlock_50.txt" 
+            else: 
+                arguments = "../arguments/args_sherlock_10k.txt"
+            
+            f = open(arguments, "r")
+            arguments = f.read()
             # Create a mock list of usernames (this should be provided in your real experiment)
-            usernames = "user1\nuser2\nuser3\nuser4"
+            # usernames = "user1\nuser2\nuser3\nuser4"
 
             profiler_cmd = f'sudo energibridge ' \
                        f'--interval {sampling_interval} ' \
                        f'--output {context.run_dir / "energibridge.csv"} ' \
                        f'--summary ' \
-                       f'python3 examples/project-runner/{script} --usernames  {usernames}'
+                       f'python3 examples/project-runner/{script} {arguments}'
 
         elif subject == "CogVideo":
-            script = "cogvideo_snippet.py" if treatment == "Default Loop" else "cogvideo_optimized.py"
+            script = "cogvideo_snippet.py " if treatment == "Default Loop" else "cogvideo_optimized.py"
+            if iterations == 50:
+                arguments = "../arguments/args_cogvideo_50.txt" 
+            else: 
+                arguments = "../arguments/args_cogvideo_10k.txt"
+
+            f = open(arguments, "r")
+            arguments = f.read()
 
             profiler_cmd = f'sudo energibridge ' \
                        f'--interval {sampling_interval} ' \
                        f'--output {context.run_dir / "energibridge.csv"} ' \
                        f'--summary ' \
-                       f'python3 examples/project-runner/{script} --prompts "A girl is on the beach" ' \
-                       f'--retry_times {iterations} --type t2v'
+                       f'python3 examples/project-runner/{script} --prompts {arguments} ' \
 
         # Command to run the experiment
         
@@ -141,12 +152,30 @@ class RunnerConfig:
     def populate_run_data(self, context: RunnerContext) -> Optional[Dict[str, Any]]:
         """Parse measurement data and populate run results."""
         df = pd.read_csv(context.run_dir / "energibridge.csv")
-        total_power = round(df['SYSTEM_POWER (Watts)'].sum(), 3)
-        used_memory = round(df['USED_MEMORY'].sum(), 3)
+        total_time = round(df['DeltaTime'].sum(), 3)
+        # total_power = round(df['CORE0_ENERGY (J)'].sum(), 3)
+        # total_power = round(df['CORE1_ENERGY (J)'].sum(), 3)
+        # total_power = round(df['CORE2_ENERGY (J)'].sum(), 3)
+        # total_power = round(df['CORE3_ENERGY (J)'].sum(), 3)
+        total_cpu_energy = round(df['CPU_ENERGY (J)'].sum(), 3)
+        mean_cpu0 = round(df['CPU_USAGE_0'].mean(), 3)
+        mean_cpu1 = round(df['CPU_USAGE_1'].mean(), 3)
+        mean_cpu2 = round(df['CPU_USAGE_2'].mean(), 3)
+        mean_cpu3 = round(df['CPU_USAGE_3'].mean(), 3)
+        mean_cpu4 = round(df['CPU_USAGE_4'].mean(), 3)
+        mean_cpu5 = round(df['CPU_USAGE_5'].mean(), 3)
+        mean_cpu6 = round(df['CPU_USAGE_6'].mean(), 3)
+        mean_cpu7 = round(df['CPU_USAGE_7'].mean(), 3)
+        used_swap = round(df['USED_SWAP'].max(), 3)
+        used_memory = round(df['USED_MEMORY'].max(), 3)
+
+        avg_cpu = (mean_cpu0 + mean_cpu1 + mean_cpu2 + mean_cpu3 + mean_cpu4 + mean_cpu5 + mean_cpu6 + mean_cpu7)/8
 
         run_data = {
-            'system_power': total_power,
+            'total_cpu_energy': total_cpu_energy,
+            'average_cpu_usage': avg_cpu,
             'used_memory': used_memory,
+            'used_swap': used_swap,
         }
         return run_data
 

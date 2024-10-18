@@ -25,6 +25,9 @@ def run_multiple_usernames():
     usernames = sys.argv[1].split("\n")
     # print(usernames)
 
+    print(sys.argv[1])
+    print(sys.argv[0])
+
 #ln 827
     all_usernames = []
     for username in usernames:

@@ -1,0 +1,7 @@
+Instructions
+
+1) Make sure paramiko is installed.
+
+2) Fill in the data in ssh_config.txt. It should contain the host, username and password (and nothing else) in that order separated by \n.
+
+3) Run experiment-runner with RunnerConfig.py

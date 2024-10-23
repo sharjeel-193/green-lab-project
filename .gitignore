@@ -2,6 +2,3 @@
 __pycache__/
 **/__pycache__/
 
-# Ignore experiments directories at any depth
-experiments/
-**/experiments/

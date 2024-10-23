@@ -1,4 +1,4 @@
-#This file contains a snippet of a loop taken from https://github.com/sherlock-project/sherlock (as of 24.09.2024)
+#This file contains the code snippet taken from "Sherlock" with the loop in multiple_usernames unrolled
 
 import sys
 
@@ -10,29 +10,26 @@ def check_for_parameter(username):
 
 checksymbols = ["_", "-", "."]
 
-
-def multiple_usernames(username):
-    """replace the parameter with with symbols and return a list of usernames"""
+#multiple_usernames unrolled
+def multiple_usernames_unrolled(username):
     allUsernames = []
-    for i in checksymbols:
-        allUsernames.append(username.replace("{?}", i))
-    return allUsernames
+    #unrolled loop
+    allUsernames.append(username.replace("{?}", "_"))
+    allUsernames.append(username.replace("{?}", "-"))
+    allUsernames.append(username.replace("{?}", "."))
 
+    return allUsernames
 
 # added code for loop optimization testing
 # this assumes that the usernames provided through the argument will have the "{?}" parameter. this is done to skip the additional check
 def run_multiple_usernames():
     usernames = sys.argv[1].split("\n")
-    # print(usernames)
-
-    print(sys.argv[1])
-    print(sys.argv[0])
 
 #ln 827
     all_usernames = []
     for username in usernames:
         # if check_for_parameter(username):
-        for name in multiple_usernames(username):
+        for name in multiple_usernames_unrolled(username):
             all_usernames.append(name)
         # else:
         #     all_usernames.append(username)
@@ -41,3 +38,4 @@ def run_multiple_usernames():
 
 if __name__ == "__main__":
     run_multiple_usernames()
+    

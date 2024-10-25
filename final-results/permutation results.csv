@@ -1,0 +1,7 @@
+"Test","MaxT","P_Value"
+"Permutation Test for Sherlock - treatment",-0.453710305918835,0.6513
+"Permutation Test for Sherlock - iterations",2.81377659522795,0.0043
+"Permutation Test for Sherlock - interaction",2.81377659522795,0.0064
+"Permutation Test for CogVideo - treatment",-0.263837376414201,0.7903
+"Permutation Test for CogVideo - iterations",1.10569734526239,0.2722
+"Permutation Test for CogVideo - interaction",1.10569734526239,0.4601
